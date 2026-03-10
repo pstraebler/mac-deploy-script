@@ -1,0 +1,36 @@
+{
+  "apps": [
+    {
+      "name": "Google Chrome",
+      "type": "brew_cask",
+      "source": "google-chrome"
+    },
+    {
+      "name": "Firefox",
+      "type": "brew_cask",
+      "source": "firefox"
+    },
+    {
+      "name": "PaperCut",
+      "type": "pkg",
+      "source": "https://example.com/papercutmac.pkg"
+    },
+    {
+      "name": "Some App",
+      "type": "dmg_app",
+      "source": "https://example.com/some-app.dmg",
+      "app_name": "Some App.app"
+    },
+    {
+      "name": "Some Suite",
+      "type": "dmg_pkg",
+      "source": "https://example.com/some-suite.dmg",
+      "pkg_name": "Installer.pkg"
+    },
+    {
+      "name": "VPN Profile",
+      "type": "mobileconfig",
+      "source": "https://example.com/vpn.mobileconfig"
+    }
+  ]
+}
