@@ -90,7 +90,7 @@ ensure_homebrew() {
   fi
 
   log "Installing Homebrew..."
-  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
   brew_bin="$(detect_brew_bin)"
   [[ -n "$brew_bin" ]] || fail "Homebrew was installed but the brew command could not be found."
