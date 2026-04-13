@@ -209,14 +209,14 @@ The script can be controlled with the following environment variables:
 | Variable | Description | Default value |
 | :-- | :-- | :-- |
 | `APP_JSON_URL` | URL of a remote JSON catalog | empty |
-| `APP_JSON_FILE` | Local path to the JSON file | `apps.json` |
+| `APP_JSON_FILE` | Local path to the JSON file | script directory + `/apps.json` |
 | `WORKDIR` | Temporary working directory | `/tmp/macos-deploy` |
 | `LOG_FILE` | Log file path | `$WORKDIR/install.log` |
 
 Example:
 
 ```bash
-APP_JSON_FILE="./apps.json" ./install-macos-apps.sh
+APP_JSON_FILE="/path/to/apps.json" ./install-macos-apps.sh
 ```
 
 Or:
@@ -261,6 +261,5 @@ This file is useful for diagnosing:
 - `.mobileconfig` profiles may require manual confirmation.
 - Xcode Command Line Tools installation may require system interaction.
 - The script assumes a graphical user session is available for the GUI selection window.
-
 
 

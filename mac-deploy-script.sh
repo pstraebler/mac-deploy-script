@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 APP_JSON_URL="${APP_JSON_URL:-}"
-APP_JSON_FILE="${APP_JSON_FILE:-apps.json}"
+APP_JSON_FILE="${APP_JSON_FILE:-$SCRIPT_DIR/apps.json}"
 WORKDIR="${WORKDIR:-/tmp/macos-deploy}"
 LOG_FILE="${LOG_FILE:-$WORKDIR/install.log}"
 
