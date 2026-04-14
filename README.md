@@ -235,6 +235,7 @@ The script follows this sequence:
 - Checks Homebrew
 - Checks `jq`
 - Loads the JSON catalog
+- Asks in the CLI whether Rosetta 2 should be installed
 - Opens a GUI selection window
 - Installs each selected application
 
@@ -261,5 +262,4 @@ This file is useful for diagnosing:
 - `.mobileconfig` profiles may require manual confirmation.
 - Xcode Command Line Tools installation may require system interaction.
 - The script assumes a graphical user session is available for the GUI selection window.
-
 

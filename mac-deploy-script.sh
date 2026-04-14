@@ -121,6 +121,38 @@ ensure_jq() {
   brew install jq
 }
 
+is_rosetta_installed() {
+  pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto >/dev/null 2>&1
+}
+
+prompt_rosetta_install() {
+  local reply
+
+  if [[ "$(uname -m)" != "arm64" ]]; then
+    log "Rosetta 2 is not required on this Mac architecture."
+    return
+  fi
+
+  if is_rosetta_installed; then
+    log "Rosetta 2 is already installed."
+    return
+  fi
+
+  printf "Do you want to install Rosetta 2 now? [y/N] "
+  read -r reply
+
+  case "$reply" in
+    [yY]|[yY][eE][sS])
+      require_sudo
+      log "Installing Rosetta 2..."
+      sudo softwareupdate --install-rosetta --agree-to-license
+      ;;
+    *)
+      log "Rosetta 2 installation skipped."
+      ;;
+  esac
+}
+
 fetch_json_if_needed() {
   if [[ -n "$APP_JSON_URL" ]]; then
     log "Downloading JSON catalog from $APP_JSON_URL"
@@ -335,6 +367,8 @@ main() {
   if [[ "${#app_names[@]}" -eq 0 ]]; then
     fail "No applications defined in the JSON catalog."
   fi
+
+  prompt_rosetta_install
 
   selected_raw="$(show_selection_gui "${app_names[@]}")"
 
