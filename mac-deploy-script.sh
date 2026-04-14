@@ -7,6 +7,7 @@ APP_JSON_URL="${APP_JSON_URL:-}"
 APP_JSON_FILE="${APP_JSON_FILE:-$SCRIPT_DIR/apps.json}"
 WORKDIR="${WORKDIR:-/tmp/macos-deploy}"
 LOG_FILE="${LOG_FILE:-$WORKDIR/install.log}"
+VERBOSE=0
 
 mkdir -p "$WORKDIR"
 touch "$LOG_FILE"
@@ -26,9 +27,43 @@ log() {
   printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
 }
 
+debug() {
+  if [[ "$VERBOSE" -eq 1 ]]; then
+    log "DEBUG: $*"
+  fi
+}
+
 fail() {
   log "ERROR: $*"
   exit 1
+}
+
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [options]
+
+Options:
+  -v, --verbose   Enable verbose output
+  -h, --help      Show this help message
+EOF
+}
+
+parse_args() {
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -v|--verbose)
+        VERBOSE=1
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
+        fail "Unknown option: $1"
+        ;;
+    esac
+    shift
+  done
 }
 
 require_sudo() {
@@ -105,6 +140,7 @@ ensure_brew_shellenv() {
   local brew_bin
   brew_bin="$(detect_brew_bin)"
   [[ -n "$brew_bin" ]] || fail "brew command not found."
+  debug "Using Homebrew binary: $brew_bin"
   eval "$("$brew_bin" shellenv)"
 }
 
@@ -161,6 +197,7 @@ fetch_json_if_needed() {
   fi
 
   [[ -f "$APP_JSON_FILE" ]] || fail "JSON file not found: $APP_JSON_FILE"
+  debug "Using JSON catalog: $APP_JSON_FILE"
 }
 
 validate_json() {
@@ -201,6 +238,7 @@ EOF
 download_file() {
   local url="$1"
   local output="$2"
+  debug "Downloading $url to $output"
   curl -fL --retry 3 --connect-timeout 20 "$url" -o "$output"
 }
 
@@ -301,6 +339,9 @@ install_from_entry() {
   pkg_name="$(printf '%s' "$entry" | jq -r '.pkg_name // empty')"
 
   log "=== Processing: $name ($type) ==="
+  debug "Entry source: $source"
+  debug "Entry app_name: ${app_name:-<empty>}"
+  debug "Entry pkg_name: ${pkg_name:-<empty>}"
 
   case "$type" in
     brew_formula)
@@ -349,7 +390,12 @@ main() {
   local app_names=()
   local selected_names=()
 
+  parse_args "$@"
   log "Starting macOS deployment"
+  debug "Verbose mode enabled."
+  debug "Script directory: $SCRIPT_DIR"
+  debug "Working directory: $WORKDIR"
+  debug "Log file: $LOG_FILE"
 
   ensure_xcode_clt
   ensure_git
@@ -368,6 +414,8 @@ main() {
     fail "No applications defined in the JSON catalog."
   fi
 
+  debug "Loaded ${#app_names[@]} application(s) from catalog."
+
   prompt_rosetta_install
 
   selected_raw="$(show_selection_gui "${app_names[@]}")"
@@ -382,6 +430,8 @@ main() {
   if [[ "${#selected_names[@]}" -eq 0 ]]; then
     fail "No applications were selected."
   fi
+
+  debug "Selected applications: ${selected_names[*]}"
 
   for name in "${selected_names[@]}"; do
     entry="$(get_app_json_by_name "$name")"

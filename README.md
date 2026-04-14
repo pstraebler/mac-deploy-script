@@ -58,11 +58,23 @@ chmod +x install-macos-apps.sh
 ./install-macos-apps.sh
 ```
 
+Verbose mode:
+
+```bash
+./install-macos-apps.sh --verbose
+```
+
 
 ### Option 2 — Remote execution
 
 ```bash
 curl -fsSL https://example.com/install-macos-apps.sh | bash
+```
+
+Verbose mode:
+
+```bash
+curl -fsSL https://example.com/install-macos-apps.sh | bash -s -- --verbose
 ```
 
 
@@ -225,6 +237,13 @@ Or:
 APP_JSON_URL="https://example.com/apps.json" ./install-macos-apps.sh
 ```
 
+CLI options:
+
+| Option | Description |
+| :-- | :-- |
+| `-v`, `--verbose` | Enable verbose output |
+| `-h`, `--help` | Show help |
+
 
 ## Installation Flow
 
@@ -262,4 +281,3 @@ This file is useful for diagnosing:
 - `.mobileconfig` profiles may require manual confirmation.
 - Xcode Command Line Tools installation may require system interaction.
 - The script assumes a graphical user session is available for the GUI selection window.
-
