@@ -28,9 +28,12 @@ The script acts as an orchestrator:
 
 1. Checks whether the machine has the required base tools.
 2. Loads an `apps.json` file.
-3. Displays a selection window.
-4. Installs the chosen applications based on their type.
-5. Shows a completion message.
+3. Optionally creates a local user through the CLI.
+4. Grants a Secure Token if the created user is an administrator.
+5. Optionally installs Rosetta 2 through the CLI.
+6. Displays a selection window.
+7. Installs the chosen applications based on their type.
+8. Shows a completion message.
 
 ## Project Structure
 
@@ -254,6 +257,8 @@ The script follows this sequence:
 - Checks Homebrew
 - Checks `jq`
 - Loads the JSON catalog
+- Asks in the CLI whether a local user should be created
+- Grants a Secure Token if the created user is an administrator
 - Asks in the CLI whether Rosetta 2 should be installed
 - Opens a GUI selection window
 - Installs each selected application

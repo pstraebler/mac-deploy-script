@@ -161,6 +161,143 @@ is_rosetta_installed() {
   pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto >/dev/null 2>&1
 }
 
+user_exists() {
+  local username="$1"
+  id -u "$username" >/dev/null 2>&1
+}
+
+create_local_user() {
+  local username="$1"
+  local password="$2"
+  local is_admin="$3"
+
+  require_sudo
+
+  if [[ "$is_admin" == "yes" ]]; then
+    log "Creating local administrator account: $username"
+    sudo sysadminctl -addUser "$username" -password "$password" -admin
+  else
+    log "Creating local standard account: $username"
+    sudo sysadminctl -addUser "$username" -password "$password"
+  fi
+}
+
+grant_secure_token_to_user() {
+  local username="$1"
+  local password="$2"
+  local token_admin_user="$3"
+  local token_admin_password="$4"
+
+  require_sudo
+  log "Granting a Secure Token to user: $username"
+  sudo sysadminctl -secureTokenOn "$username" -password "$password" -adminUser "$token_admin_user" -adminPassword "$token_admin_password"
+}
+
+prompt_user_creation() {
+  local reply
+  local username
+  local password
+  local password_confirm
+  local admin_reply
+  local token_admin_user
+  local token_admin_password
+  local is_admin="no"
+
+  printf "Do you want to create a local user now? [y/N] "
+  read -r reply
+
+  case "$reply" in
+    [yY]|[yY][eE][sS])
+      ;;
+    *)
+      log "User creation skipped."
+      return
+      ;;
+  esac
+
+  while true; do
+    printf "Enter the username to create: "
+    read -r username
+
+    if [[ -z "$username" ]]; then
+      log "Username cannot be empty."
+      continue
+    fi
+
+    if user_exists "$username"; then
+      log "User already exists: $username"
+      continue
+    fi
+
+    break
+  done
+
+  while true; do
+    read -r -s -p "Enter the password for $username: " password
+    printf "\n"
+    read -r -s -p "Confirm the password for $username: " password_confirm
+    printf "\n"
+
+    if [[ -z "$password" ]]; then
+      log "Password cannot be empty."
+      continue
+    fi
+
+    if [[ "$password" != "$password_confirm" ]]; then
+      log "Passwords do not match. Please try again."
+      continue
+    fi
+
+    break
+  done
+
+  printf "Should this user have administrator rights? [y/N] "
+  read -r admin_reply
+
+  case "$admin_reply" in
+    [yY]|[yY][eE][sS])
+      is_admin="yes"
+      ;;
+  esac
+
+  debug "Creating user '$username' with admin rights: $is_admin"
+  create_local_user "$username" "$password" "$is_admin"
+
+  if [[ "$is_admin" == "yes" ]]; then
+    while true; do
+      printf "Enter the username of an existing Secure Token-enabled administrator: "
+      read -r token_admin_user
+
+      if [[ -z "$token_admin_user" ]]; then
+        log "Administrator username cannot be empty."
+        continue
+      fi
+
+      if ! user_exists "$token_admin_user"; then
+        log "Administrator user not found: $token_admin_user"
+        continue
+      fi
+
+      break
+    done
+
+    while true; do
+      read -r -s -p "Enter the password for $token_admin_user: " token_admin_password
+      printf "\n"
+
+      if [[ -z "$token_admin_password" ]]; then
+        log "Administrator password cannot be empty."
+        continue
+      fi
+
+      break
+    done
+
+    debug "Granting Secure Token to '$username' using administrator '$token_admin_user'"
+    grant_secure_token_to_user "$username" "$password" "$token_admin_user" "$token_admin_password"
+  fi
+}
+
 prompt_rosetta_install() {
   local reply
 
@@ -416,6 +553,7 @@ main() {
 
   debug "Loaded ${#app_names[@]} application(s) from catalog."
 
+  prompt_user_creation
   prompt_rosetta_install
 
   selected_raw="$(show_selection_gui "${app_names[@]}")"
