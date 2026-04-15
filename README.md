@@ -100,6 +100,7 @@ curl -fsSL https://example.com/install-macos-apps.sh | APP_JSON_URL="https://exa
 The catalog must contain an `apps` key with an array of objects.
 
 For downloaded types, `download_name` is optional and lets you force the local filename used in `WORKDIR`.
+For all application types, `post_install_message` is optional and is displayed at the end of the script if the application was installed.
 
 Example:
 
@@ -109,7 +110,8 @@ Example:
     {
       "name": "Google Chrome",
       "type": "brew_cask",
-      "source": "google-chrome"
+      "source": "google-chrome",
+      "post_install_message": "Connectez-vous avec votre compte Google si nécessaire."
     },
     {
       "name": "Firefox",
@@ -153,6 +155,9 @@ Example:
 
 Installs a CLI package via Homebrew.
 
+Optional field:
+- `post_install_message`: message displayed at the end of the script
+
 ```json
 {
   "name": "wget",
@@ -165,6 +170,9 @@ Installs a CLI package via Homebrew.
 ### `brew_cask`
 
 Installs a macOS application via Homebrew Cask.
+
+Optional field:
+- `post_install_message`: message displayed at the end of the script
 
 ```json
 {
@@ -181,6 +189,7 @@ Downloads a `.pkg` file and installs it.
 
 Optional field:
 - `download_name`: local filename to use in `WORKDIR`
+- `post_install_message`: message displayed at the end of the script
 
 ```json
 {
@@ -198,6 +207,7 @@ Downloads a `.dmg`, mounts it, and copies an app into `/Applications`.
 
 Optional field:
 - `download_name`: local filename to use in `WORKDIR`
+- `post_install_message`: message displayed at the end of the script
 
 ```json
 {
@@ -216,6 +226,7 @@ Downloads a `.dmg`, mounts it, and runs a `.pkg` found inside the mounted volume
 
 Optional field:
 - `download_name`: local filename to use in `WORKDIR`
+- `post_install_message`: message displayed at the end of the script
 
 ```json
 {
@@ -234,6 +245,7 @@ Downloads a profile and opens it for user installation.
 
 Optional field:
 - `download_name`: local filename to use in `WORKDIR`
+- `post_install_message`: message displayed at the end of the script
 
 ```json
 {

@@ -16,6 +16,7 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 
 CURRENT_MOUNT_POINT=""
 SUDO_KEEPALIVE_PID=""
+POST_INSTALL_MESSAGES=()
 
 cleanup() {
   if [[ -n "${SUDO_KEEPALIVE_PID}" ]]; then
@@ -573,6 +574,29 @@ install_mobileconfig() {
   open "$profile_file"
 }
 
+store_post_install_message() {
+  local app_name="$1"
+  local message="$2"
+
+  [[ -n "$message" ]] || return
+  POST_INSTALL_MESSAGES+=("${app_name}|||${message}")
+}
+
+show_post_install_messages() {
+  local entry
+  local app_name
+  local message
+
+  [[ "${#POST_INSTALL_MESSAGES[@]}" -gt 0 ]] || return
+
+  log "Post-install messages:"
+  for entry in "${POST_INSTALL_MESSAGES[@]}"; do
+    app_name="${entry%%|||*}"
+    message="${entry#*|||}"
+    printf '\033[1m%s\033[0m : %s\n' "$app_name" "$message"
+  done
+}
+
 resolve_download_path() {
   local name="$1"
   local default_extension="$2"
@@ -594,6 +618,7 @@ install_from_entry() {
   local app_name
   local pkg_name
   local download_name
+  local post_install_message
   local tmpfile
 
   name="$(printf '%s' "$entry" | jq -r '.name')"
@@ -602,12 +627,14 @@ install_from_entry() {
   app_name="$(printf '%s' "$entry" | jq -r '.app_name // empty')"
   pkg_name="$(printf '%s' "$entry" | jq -r '.pkg_name // empty')"
   download_name="$(printf '%s' "$entry" | jq -r '.download_name // empty')"
+  post_install_message="$(printf '%s' "$entry" | jq -r '.post_install_message // empty')"
 
   log "=== Processing: $name ($type) ==="
   debug "Entry source: $source"
   debug "Entry app_name: ${app_name:-<empty>}"
   debug "Entry pkg_name: ${pkg_name:-<empty>}"
   debug "Entry download_name: ${download_name:-<empty>}"
+  debug "Entry post_install_message: ${post_install_message:-<empty>}"
 
   case "$type" in
     brew_formula)
@@ -646,6 +673,8 @@ install_from_entry() {
       fail "Unknown type for $name: $type"
       ;;
   esac
+
+  store_post_install_message "$name" "$post_install_message"
 }
 
 main() {
@@ -713,6 +742,7 @@ main() {
   done
 
   log "Installation completed."
+  show_post_install_messages
   osascript -e 'display dialog "Installation completed." buttons {"OK"} default button "OK" with title "macOS Deployment"'
 }
 

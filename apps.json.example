@@ -3,7 +3,8 @@
     {
       "name": "Google Chrome",
       "type": "brew_cask",
-      "source": "google-chrome"
+      "source": "google-chrome",
+      "post_install_message": "Connectez-vous avec votre compte Google si necessaire."
     },
     {
       "name": "Firefox",
