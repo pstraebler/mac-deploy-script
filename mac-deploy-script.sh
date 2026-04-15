@@ -354,6 +354,41 @@ prompt_filevault_enable() {
   esac
 }
 
+prompt_machine_name_setup() {
+  local reply
+  local machine_name
+
+  printf "Do you want to set the machine name now? [y/N] "
+  read -r reply
+
+  case "$reply" in
+    [yY]|[yY][eE][sS])
+      ;;
+    *)
+      log "Machine name setup skipped."
+      return
+      ;;
+  esac
+
+  while true; do
+    printf "Enter the machine name: "
+    read -r machine_name
+
+    if [[ -z "$machine_name" ]]; then
+      log "Machine name cannot be empty."
+      continue
+    fi
+
+    break
+  done
+
+  require_sudo
+  log "Setting machine name to: $machine_name"
+  sudo scutil --set HostName "$machine_name"
+  sudo scutil --set LocalHostName "$machine_name"
+  sudo scutil --set ComputerName "$machine_name"
+}
+
 prompt_rosetta_install() {
   local reply
 
@@ -611,6 +646,7 @@ main() {
 
   prompt_user_creation
   prompt_filevault_enable
+  prompt_machine_name_setup
   prompt_rosetta_install
 
   selected_raw="$(show_selection_gui "${app_names[@]}")"
