@@ -7,7 +7,6 @@ The script also handles user creation, enabling FileVault encryption, and managi
 
 *Tested on macOS Sonoma and newer; earlier versions may not be supported.*
 
-
 ## Features
 
 - Checks for and installs required dependencies:
