@@ -3,6 +3,10 @@
 A Bash script to automate Mac deployment by installing a selected set of applications through a lightweight graphical interface.  
 The project supports installation via Homebrew, `.pkg` files, `.dmg` images, and `.mobileconfig` profiles.
 
+The script also handles user creation, enabling FileVault encryption, and managing the Xcode Command Line Tools. 
+
+*Tested on macOS Sonoma and newer; earlier versions may not be supported.*
+
 ## Features
 
 - Checks for and installs required dependencies:
