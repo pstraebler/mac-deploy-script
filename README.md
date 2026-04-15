@@ -52,6 +52,7 @@ deploy-macos/
 - An active user session to display the GUI
 - Internet access to download packages and dependencies
 - `sudo` privileges for some system-level installations
+- The administrator password is requested once at the beginning of the script and reused for subsequent `sudo` commands
 
 
 ## Installation

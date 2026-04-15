@@ -15,8 +15,13 @@ touch "$LOG_FILE"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 CURRENT_MOUNT_POINT=""
+SUDO_KEEPALIVE_PID=""
 
 cleanup() {
+  if [[ -n "${SUDO_KEEPALIVE_PID}" ]]; then
+    kill "$SUDO_KEEPALIVE_PID" >/dev/null 2>&1 || true
+  fi
+
   if [[ -n "${CURRENT_MOUNT_POINT}" && -d "${CURRENT_MOUNT_POINT}" ]]; then
     hdiutil detach "$CURRENT_MOUNT_POINT" -quiet || true
   fi
@@ -70,6 +75,23 @@ require_sudo() {
   if [[ "${EUID}" -ne 0 ]]; then
     sudo -v || fail "Unable to obtain sudo privileges."
   fi
+}
+
+start_sudo_keepalive() {
+  if [[ "${EUID}" -eq 0 ]]; then
+    return
+  fi
+
+  log "Requesting administrator privileges..."
+  sudo -v || fail "Unable to obtain sudo privileges."
+
+  while true; do
+    sleep 60
+    sudo -n true >/dev/null 2>&1 || exit
+  done &
+
+  SUDO_KEEPALIVE_PID="$!"
+  debug "Started sudo keepalive process with PID: $SUDO_KEEPALIVE_PID"
 }
 
 command_exists() {
@@ -624,6 +646,8 @@ main() {
   debug "Script directory: $SCRIPT_DIR"
   debug "Working directory: $WORKDIR"
   debug "Log file: $LOG_FILE"
+
+  start_sudo_keepalive
 
   ensure_xcode_clt
   ensure_git
