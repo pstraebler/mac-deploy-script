@@ -578,7 +578,10 @@ store_post_install_message() {
   local app_name="$1"
   local message="$2"
 
-  [[ -n "$message" ]] || return
+  if [[ -z "$message" ]]; then
+    return 0
+  fi
+
   POST_INSTALL_MESSAGES+=("${app_name}|||${message}")
 }
 
@@ -725,7 +728,11 @@ main() {
     exit 0
   fi
 
-  IFS='|||' read -r -a selected_names <<< "$selected_raw"
+  selected_raw="${selected_raw//|||/$'\n'}"
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    selected_names+=("$line")
+  done <<< "$selected_raw"
 
   if [[ "${#selected_names[@]}" -eq 0 ]]; then
     fail "No applications were selected."
