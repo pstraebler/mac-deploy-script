@@ -161,6 +161,10 @@ is_rosetta_installed() {
   pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto >/dev/null 2>&1
 }
 
+is_filevault_enabled() {
+  fdesetup status | grep -q "FileVault is On."
+}
+
 user_exists() {
   local username="$1"
   id -u "$username" >/dev/null 2>&1
@@ -322,6 +326,32 @@ prompt_user_creation() {
     debug "Granting Secure Token to '$username' using administrator '$token_admin_user'"
     grant_secure_token_to_user "$username" "$password" "$token_admin_user" "$token_admin_password"
   fi
+}
+
+prompt_filevault_enable() {
+  local reply
+
+  if is_filevault_enabled; then
+    log "FileVault is already enabled."
+    return
+  fi
+
+  printf "FileVault is disabled. Do you want to enable it now? [y/N] "
+  read -r reply
+
+  case "$reply" in
+    [yY]|[yY][eE][sS])
+      require_sudo
+      log "You will need to enter the login and password of an administrator account."
+      log "Enabling FileVault and saving the recovery information to ~/filevault.plist"
+      sudo fdesetup enable -outputplist > "$HOME/filevault.plist"
+      log "FileVault has been enabled."
+      log "The plist file can be retrieved at $HOME/filevault.plist"
+      ;;
+    *)
+      log "FileVault activation skipped."
+      ;;
+  esac
 }
 
 prompt_rosetta_install() {
@@ -580,6 +610,7 @@ main() {
   debug "Loaded ${#app_names[@]} application(s) from catalog."
 
   prompt_user_creation
+  prompt_filevault_enable
   prompt_rosetta_install
 
   selected_raw="$(show_selection_gui "${app_names[@]}")"

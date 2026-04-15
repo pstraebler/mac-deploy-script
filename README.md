@@ -30,10 +30,11 @@ The script acts as an orchestrator:
 2. Loads an `apps.json` file.
 3. Optionally creates a local user through the CLI.
 4. Grants a Secure Token if the created user is an administrator.
-5. Optionally installs Rosetta 2 through the CLI.
-6. Displays a selection window.
-7. Installs the chosen applications based on their type.
-8. Shows a completion message.
+5. Optionally enables FileVault through the CLI.
+6. Optionally installs Rosetta 2 through the CLI.
+7. Displays a selection window.
+8. Installs the chosen applications based on their type.
+9. Shows a completion message.
 
 ## Project Structure
 
@@ -259,6 +260,7 @@ The script follows this sequence:
 - Loads the JSON catalog
 - Asks in the CLI whether a local user should be created
 - Grants a Secure Token if the created user is an administrator
+- Checks whether FileVault is enabled and optionally enables it
 - Asks in the CLI whether Rosetta 2 should be installed
 - Opens a GUI selection window
 - Installs each selected application
