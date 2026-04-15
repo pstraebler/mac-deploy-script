@@ -13,24 +13,28 @@
     {
       "name": "PaperCut",
       "type": "pkg",
-      "source": "https://example.com/papercutmac.pkg"
+      "source": "https://example.com/papercutmac.pkg",
+      "download_name": "papercutmac.pkg"
     },
     {
       "name": "Some App",
       "type": "dmg_app",
       "source": "https://example.com/some-app.dmg",
-      "app_name": "Some App.app"
+      "app_name": "Some App.app",
+      "download_name": "Some App Installer.dmg"
     },
     {
       "name": "Some Suite",
       "type": "dmg_pkg",
       "source": "https://example.com/some-suite.dmg",
-      "pkg_name": "Installer.pkg"
+      "pkg_name": "Installer.pkg",
+      "download_name": "SomeSuiteInstaller.dmg"
     },
     {
       "name": "VPN Profile",
       "type": "mobileconfig",
-      "source": "https://example.com/vpn.mobileconfig"
+      "source": "https://example.com/vpn.mobileconfig",
+      "download_name": "company-vpn.mobileconfig"
     }
   ]
 }

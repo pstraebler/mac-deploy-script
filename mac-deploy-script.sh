@@ -573,6 +573,19 @@ install_mobileconfig() {
   open "$profile_file"
 }
 
+resolve_download_path() {
+  local name="$1"
+  local default_extension="$2"
+  local download_name="${3:-}"
+
+  if [[ -n "$download_name" ]]; then
+    printf '%s/%s\n' "$WORKDIR" "$download_name"
+    return
+  fi
+
+  printf '%s/%s.%s\n' "$WORKDIR" "${name// /_}" "$default_extension"
+}
+
 install_from_entry() {
   local entry="$1"
   local name
@@ -580,6 +593,7 @@ install_from_entry() {
   local source
   local app_name
   local pkg_name
+  local download_name
   local tmpfile
 
   name="$(printf '%s' "$entry" | jq -r '.name')"
@@ -587,11 +601,13 @@ install_from_entry() {
   source="$(printf '%s' "$entry" | jq -r '.source')"
   app_name="$(printf '%s' "$entry" | jq -r '.app_name // empty')"
   pkg_name="$(printf '%s' "$entry" | jq -r '.pkg_name // empty')"
+  download_name="$(printf '%s' "$entry" | jq -r '.download_name // empty')"
 
   log "=== Processing: $name ($type) ==="
   debug "Entry source: $source"
   debug "Entry app_name: ${app_name:-<empty>}"
   debug "Entry pkg_name: ${pkg_name:-<empty>}"
+  debug "Entry download_name: ${download_name:-<empty>}"
 
   case "$type" in
     brew_formula)
@@ -601,7 +617,7 @@ install_from_entry() {
       install_brew_cask "$source"
       ;;
     pkg)
-      tmpfile="$WORKDIR/${name// /_}.pkg"
+      tmpfile="$(resolve_download_path "$name" "pkg" "$download_name")"
       download_file "$source" "$tmpfile"
       install_pkg_file "$tmpfile"
       ;;
@@ -609,7 +625,7 @@ install_from_entry() {
       if [[ -z "$app_name" ]]; then
         fail "app_name is required for $name"
       fi
-      tmpfile="$WORKDIR/${name// /_}.dmg"
+      tmpfile="$(resolve_download_path "$name" "dmg" "$download_name")"
       download_file "$source" "$tmpfile"
       install_dmg_app "$tmpfile" "$app_name"
       ;;
@@ -617,12 +633,12 @@ install_from_entry() {
       if [[ -z "$pkg_name" ]]; then
         fail "pkg_name is required for $name"
       fi
-      tmpfile="$WORKDIR/${name// /_}.dmg"
+      tmpfile="$(resolve_download_path "$name" "dmg" "$download_name")"
       download_file "$source" "$tmpfile"
       install_dmg_pkg "$tmpfile" "$pkg_name"
       ;;
     mobileconfig)
-      tmpfile="$WORKDIR/${name// /_}.mobileconfig"
+      tmpfile="$(resolve_download_path "$name" "mobileconfig" "$download_name")"
       download_file "$source" "$tmpfile"
       install_mobileconfig "$tmpfile"
       ;;

@@ -99,6 +99,8 @@ curl -fsSL https://example.com/install-macos-apps.sh | APP_JSON_URL="https://exa
 
 The catalog must contain an `apps` key with an array of objects.
 
+For downloaded types, `download_name` is optional and lets you force the local filename used in `WORKDIR`.
+
 Example:
 
 ```json
@@ -117,24 +119,28 @@ Example:
     {
       "name": "PaperCut",
       "type": "pkg",
-      "source": "https://example.com/papercutmac.pkg"
+      "source": "https://example.com/papercutmac.pkg",
+      "download_name": "papercutmac.pkg"
     },
     {
       "name": "Some App",
       "type": "dmg_app",
       "source": "https://example.com/some-app.dmg",
-      "app_name": "Some App.app"
+      "app_name": "Some App.app",
+      "download_name": "Some App Installer.dmg"
     },
     {
       "name": "Some Suite",
       "type": "dmg_pkg",
       "source": "https://example.com/some-suite.dmg",
-      "pkg_name": "Installer.pkg"
+      "pkg_name": "Installer.pkg",
+      "download_name": "SomeSuiteInstaller.dmg"
     },
     {
       "name": "VPN Profile",
       "type": "mobileconfig",
-      "source": "https://example.com/vpn.mobileconfig"
+      "source": "https://example.com/vpn.mobileconfig",
+      "download_name": "company-vpn.mobileconfig"
     }
   ]
 }
@@ -173,11 +179,15 @@ Installs a macOS application via Homebrew Cask.
 
 Downloads a `.pkg` file and installs it.
 
+Optional field:
+- `download_name`: local filename to use in `WORKDIR`
+
 ```json
 {
   "name": "PaperCut",
   "type": "pkg",
-  "source": "https://example.com/papercutmac.pkg"
+  "source": "https://example.com/papercutmac.pkg",
+  "download_name": "papercutmac.pkg"
 }
 ```
 
@@ -186,12 +196,16 @@ Downloads a `.pkg` file and installs it.
 
 Downloads a `.dmg`, mounts it, and copies an app into `/Applications`.
 
+Optional field:
+- `download_name`: local filename to use in `WORKDIR`
+
 ```json
 {
   "name": "Some App",
   "type": "dmg_app",
   "source": "https://example.com/some-app.dmg",
-  "app_name": "Some App.app"
+  "app_name": "Some App.app",
+  "download_name": "Some App Installer.dmg"
 }
 ```
 
@@ -200,12 +214,16 @@ Downloads a `.dmg`, mounts it, and copies an app into `/Applications`.
 
 Downloads a `.dmg`, mounts it, and runs a `.pkg` found inside the mounted volume.
 
+Optional field:
+- `download_name`: local filename to use in `WORKDIR`
+
 ```json
 {
   "name": "Some Suite",
   "type": "dmg_pkg",
   "source": "https://example.com/some-suite.dmg",
-  "pkg_name": "Installer.pkg"
+  "pkg_name": "Installer.pkg",
+  "download_name": "SomeSuiteInstaller.dmg"
 }
 ```
 
@@ -214,11 +232,15 @@ Downloads a `.dmg`, mounts it, and runs a `.pkg` found inside the mounted volume
 
 Downloads a profile and opens it for user installation.
 
+Optional field:
+- `download_name`: local filename to use in `WORKDIR`
+
 ```json
 {
   "name": "VPN Profile",
   "type": "mobileconfig",
-  "source": "https://example.com/vpn.mobileconfig"
+  "source": "https://example.com/vpn.mobileconfig",
+  "download_name": "company-vpn.mobileconfig"
 }
 ```
 
