@@ -166,20 +166,38 @@ user_exists() {
   id -u "$username" >/dev/null 2>&1
 }
 
+user_is_admin() {
+  local username="$1"
+  dseditgroup -o checkmember -m "$username" admin | grep -q "yes"
+}
+
 create_local_user() {
   local username="$1"
   local password="$2"
   local is_admin="$3"
+  local command_status=0
 
   require_sudo
 
   if [[ "$is_admin" == "yes" ]]; then
     log "Creating local administrator account: $username"
-    sudo sysadminctl -addUser "$username" -password "$password" -admin
+    sudo sysadminctl -addUser "$username" -password "$password" -admin || command_status=$?
   else
     log "Creating local standard account: $username"
-    sudo sysadminctl -addUser "$username" -password "$password"
+    sudo sysadminctl -addUser "$username" -password "$password" || command_status=$?
   fi
+
+  if ! user_exists "$username"; then
+    debug "User creation verification failed for '$username' (sysadminctl exit code: $command_status)"
+    return 1
+  fi
+
+  if [[ "$is_admin" == "yes" ]] && ! user_is_admin "$username"; then
+    debug "Admin rights verification failed for '$username' (sysadminctl exit code: $command_status)"
+    return 1
+  fi
+
+  return 0
 }
 
 grant_secure_token_to_user() {
@@ -190,7 +208,11 @@ grant_secure_token_to_user() {
 
   require_sudo
   log "Granting a Secure Token to user: $username"
-  sudo sysadminctl -secureTokenOn "$username" -password "$password" -adminUser "$token_admin_user" -adminPassword "$token_admin_password"
+  if sudo sysadminctl -secureTokenOn "$username" -password "$password" -adminUser "$token_admin_user" -adminPassword "$token_admin_password"; then
+    return 0
+  fi
+
+  return 1
 }
 
 prompt_user_creation() {
@@ -261,7 +283,11 @@ prompt_user_creation() {
   esac
 
   debug "Creating user '$username' with admin rights: $is_admin"
-  create_local_user "$username" "$password" "$is_admin"
+  if ! create_local_user "$username" "$password" "$is_admin"; then
+    log "ERROR: Failed to create user: $username"
+    log "Skipping Secure Token setup and continuing with Rosetta 2 check."
+    return
+  fi
 
   if [[ "$is_admin" == "yes" ]]; then
     while true; do
