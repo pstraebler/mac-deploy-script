@@ -367,9 +367,9 @@ prompt_filevault_enable() {
       require_sudo
       log "You will need to enter the login and password of an administrator account."
       log "Enabling FileVault and saving the recovery information to ~/filevault.plist"
-      sudo fdesetup enable -outputplist > "$HOME/filevault.plist"
+      sudo fdesetup enable -outputplist > "$HOME/filevault-$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}').plist"
       log "FileVault has been enabled."
-      log "The plist file can be retrieved at $HOME/filevault.plist"
+      log "The plist file can be retrieved at $HOME/filevault-$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}').plist"
       ;;
     *)
       log "FileVault activation skipped."
