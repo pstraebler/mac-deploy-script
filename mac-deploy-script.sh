@@ -73,22 +73,28 @@ parse_args() {
 }
 
 require_sudo() {
-  if [[ "${EUID}" -ne 0 ]]; then
-    sudo -v || fail "Unable to obtain sudo privileges."
-  fi
+  start_sudo_keepalive
 }
 
 start_sudo_keepalive() {
+  local parent_pid
+
   if [[ "${EUID}" -eq 0 ]]; then
+    return
+  fi
+
+  if [[ -n "${SUDO_KEEPALIVE_PID}" ]] && kill -0 "${SUDO_KEEPALIVE_PID}" >/dev/null 2>&1; then
     return
   fi
 
   log "Requesting administrator privileges..."
   sudo -v || fail "Unable to obtain sudo privileges."
 
+  parent_pid="$$"
   while true; do
-    sleep 60
-    sudo -n true >/dev/null 2>&1 || exit
+    sleep 50
+    kill -0 "$parent_pid" >/dev/null 2>&1 || exit
+    sudo -n -v >/dev/null 2>&1 || exit
   done &
 
   SUDO_KEEPALIVE_PID="$!"
@@ -694,8 +700,6 @@ main() {
   debug "Script directory: $SCRIPT_DIR"
   debug "Working directory: $WORKDIR"
   debug "Log file: $LOG_FILE"
-
-  start_sudo_keepalive
 
   ensure_xcode_clt
   ensure_git
